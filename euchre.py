@@ -68,6 +68,8 @@ class Player():
         self.hand = []
     def recCard(self, card):
         self.hand.append(card)
+    def playCard(self, card):
+        self.hand.remove(card)
     def displayHand(self):
         x = ''
         for i in range(len(self.hand)):
@@ -77,6 +79,19 @@ class Player():
 class HPlayer(Player):
     def __init__(self):
         self.hand = []
+    def bid(self, suit_open):
+        if suit_open:
+           choice = raw_input('Pick a suit or pass (P): ')
+        else:
+           choice = raw_input('Order dealer (O) or Pass (P): ')
+        return choice
+    def play(self, trump):
+        choice = raw_input('Pick a card to play: ')
+        card = Card(choice[0],choice[1])
+        self.playCard(card)
+        return choice
+    
+
 class AIPlayer(Player):
     def __init__(self):
         self.hand = []
@@ -85,6 +100,10 @@ class AIPlayer(Player):
             return 'D'
         else:
             return 'O'
+    def play(self, trump):
+        card = self.hand[0]
+        self.playCard(card)
+        return card.str()
         
 
 class EuchreGame():
@@ -95,6 +114,7 @@ class EuchreGame():
         self.dealer = random.randint(0,3)
         self.nextToPlay = (self.dealer + 1) % 4
         self.suitOpen = False
+        self.playing = True
 
     def deal(self):
         self.deck.reset()
@@ -119,13 +139,7 @@ class EuchreGame():
 
     def takeTurn(self):
         if not self.trump:
-            if self.nextToPlay == 0:
-                if self.suitOpen:
-                    choice = raw_input('Pick a suit or pass (P): ')
-                else:
-                    choice = raw_input('Order dealer (O) or Pass (P): ')
-            else:
-                choice = self.players[self.nextToPlay].bid(self.suitOpen)                
+            choice = self.players[self.nextToPlay].bid(self.suitOpen)                
             if choice == 'P' or choice == 'p':
 
                 self.nextToPlay = (self.nextToPlay + 1) % 4
@@ -137,15 +151,24 @@ class EuchreGame():
             else:
                 trump = choice
                 self.nextToPlay == (self.nextToPlay + 1) % 4
-                
+        else:
+            #trump is chosen play a card
+            choice = self.players[self.nextToPlay].play(self.trump)
+            self.nextToPlay == (self.nextToPlay + 1) % 4
+    def play(self):
+        self.deal()
+        while self.playing:
+            self.display()
+            choice = raw_input('x to quit or c to continue: ')
+            if choice <> 'c':
+                self.playing = False
+            else:
+                self.takeTurn()
 def Test1():
     #comment
     
     game = EuchreGame()
-    game.deal()
-    game.display()
-    game.takeTurn()
-    game.display()
+    game.play()
 
 Test1()
     
